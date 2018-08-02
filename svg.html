@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!--
+Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interactive/dragging/
+-->
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        #main {
+            width: 600px;
+            height: 600px;
+        }
+
+        .draggable {
+            cursor: move;
+        }
+    </style>
+
+<script>
+    function makeDraggable(evt) {
+        let svg = evt.target;
+        
+        let selected = null;
+        let offset = null;
+        
+        svg.addEventListener('mousedown', startDrag);
+        svg.addEventListener('mousemove', drag);
+        svg.addEventListener('mouseup', endDrag);
+        
+        function startDrag(evt) {
+            if( evt.target.classList.contains('draggable') ) {
+                selected = evt.target;
+
+                let mouse = mousePosition(evt);
+                let target = {  x: selected.getAttributeNS(null, 'cx'),
+                                y: selected.getAttributeNS(null, 'cy') };
+                offset = {  x: mouse.x - target.x,
+                            y: mouse.y - target.y };
+                console.log(target);
+            }
+        }
+        function drag(evt) {
+            if( selected ) {
+                evt.prevtDefault();
+                let mouse = mousePosition(evt);
+                let moveto = {  x: mouse.x - offset.x,
+                                y: mouse.y - offset.y };
+                selected.setAttributeNS(null, 'cx', moveto.x);
+                selected.setAttributeNS(null, 'cy', moveto.y);
+                console.log(moveto);
+            }
+        }
+        function endDrag(evt) {
+            selected = null;
+        }
+
+        function mousePosition(evt) {
+            // (x,y) -> (ax + e, dy + f)
+            let ctm = svg.getScreenCTM();
+            return {
+                x: (evt.clientX - ctm.e) / ctm.a,
+                y: (evt.clientY - ctm.f) / ctm.d
+            };
+        }
+    }
+</script>
+</head>
+<body>
+    <svg id="main" viewBox="0 0 100 100" onload="makeDraggable(window.event)">
+        <circle cx="90" cy="90" r="10" stroke="green" stroke-width="1" fill="yellow"
+                class="draggable" />
+        <circle cx="5" cy="5" r="5" stroke="purple" stroke-width="1" fill="blue"
+                class="draggable" />
+    </svg>
+
+</body>
+</html>
