@@ -18,16 +18,32 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
 
 <script>
     function makeDraggable(evt) {
-        let svg = evt.target;
-        
         let selected = null;
         let offset = null;
         
-        svg.addEventListener('mousedown', startDrag);
-        svg.addEventListener('mousemove', drag);
-        svg.addEventListener('mouseup', endDrag);
+        svg = getSvg(evt);
+        if(evt) {
+            svg.addEventListener('mousedown', startDrag);
+            svg.addEventListener('mousemove', drag);
+            svg.addEventListener('mouseup', endDrag);
+        }
+        else {
+            svg.onmousedown = startDrag;
+            svg.onmousemove = drag;
+            svg.onmouseup = endDrag;
+        }
         
+        function getSvg(evt) {
+            if(evt) {
+                return evt.target;
+            }
+            else {
+                return window;
+            }
+        }
+
         function startDrag(evt) {
+            console.log(evt);
             if( evt.target.classList.contains('draggable') ) {
                 selected = evt.target;
 
@@ -41,7 +57,7 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
         }
         function drag(evt) {
             if( selected ) {
-                evt.prevtDefault();
+                evt.preventDefault();
                 let mouse = mousePosition(evt);
                 let moveto = {  x: mouse.x - offset.x,
                                 y: mouse.y - offset.y };
@@ -51,12 +67,23 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
             }
         }
         function endDrag(evt) {
+            console.log(selected);
             selected = null;
+            console.log(selected);
         }
 
         function mousePosition(evt) {
             // (x,y) -> (ax + e, dy + f)
-            let ctm = svg.getScreenCTM();
+            svg = getSvg(evt);
+            
+            if( evt ) { // no need to massage evt
+            }
+            else {
+                evt = svg;
+            }
+            
+            console.log(evt);
+            let ctm = evt.target.getScreenCTM();
             return {
                 x: (evt.clientX - ctm.e) / ctm.a,
                 y: (evt.clientY - ctm.f) / ctm.d
