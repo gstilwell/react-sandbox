@@ -33,6 +33,8 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
             svg.onmouseup = endDrag;
         }
         
+        // get the appropriate svg object based on whether the browser passes
+        // the event to event handlers or makes you get it from the global space
         function getSvg(evt) {
             if(evt) {
                 return evt.target;
@@ -43,7 +45,6 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
         }
 
         function startDrag(evt) {
-            console.log(evt);
             if( evt.target.classList.contains('draggable') ) {
                 selected = evt.target;
 
@@ -52,7 +53,6 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
                                 y: selected.getAttributeNS(null, 'cy') };
                 offset = {  x: mouse.x - target.x,
                             y: mouse.y - target.y };
-                console.log(target);
             }
         }
         function drag(evt) {
@@ -63,26 +63,14 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
                                 y: mouse.y - offset.y };
                 selected.setAttributeNS(null, 'cx', moveto.x);
                 selected.setAttributeNS(null, 'cy', moveto.y);
-                console.log(moveto);
             }
         }
         function endDrag(evt) {
-            console.log(selected);
             selected = null;
-            console.log(selected);
         }
 
         function mousePosition(evt) {
             // (x,y) -> (ax + e, dy + f)
-            svg = getSvg(evt);
-            
-            if( evt ) { // no need to massage evt
-            }
-            else {
-                evt = svg;
-            }
-            
-            console.log(evt);
             let ctm = evt.target.getScreenCTM();
             return {
                 x: (evt.clientX - ctm.e) / ctm.a,
@@ -94,6 +82,8 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
 </head>
 <body>
     <svg id="main" viewBox="0 0 100 100" onload="makeDraggable(window.event)">
+        <circle cx="50" cy="50" r="5" stroke="red" stroke-width="1" fill="black"
+                class="notdraggable" />
         <circle cx="90" cy="90" r="10" stroke="green" stroke-width="1" fill="yellow"
                 class="draggable" />
         <circle cx="5" cy="5" r="5" stroke="purple" stroke-width="1" fill="blue"
