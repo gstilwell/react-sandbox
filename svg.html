@@ -46,7 +46,11 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
 
         function startDrag(evt) {
             if( evt.target.classList.contains('draggable') ) {
+                // need to prevent default here to make click/drag not drag the entire window in firefox
+                // https://stackoverflow.com/questions/6259622/dragging-selecting-inside-svg-in-firefox
+                evt.preventDefault();
                 selected = evt.target;
+                console.log(selected);
 
                 let mouse = mousePosition(evt);
                 let target = {  x: selected.getAttributeNS(null, 'cx'),
@@ -57,24 +61,52 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
         }
         function drag(evt) {
             if( selected ) {
+                // it seems that preventing default here too (in addition to startDrag) makes the drag
+                // less jerky on Firefox
                 evt.preventDefault();
                 let mouse = mousePosition(evt);
                 let moveto = {  x: mouse.x - offset.x,
                                 y: mouse.y - offset.y };
+                console.log("coordinates in svg", moveto.x, moveto.y);
                 selected.setAttributeNS(null, 'cx', moveto.x);
                 selected.setAttributeNS(null, 'cy', moveto.y);
             }
         }
         function endDrag(evt) {
             selected = null;
+            console.log(selected);
         }
 
         function mousePosition(evt) {
             // (x,y) -> (ax + e, dy + f)
-            let ctm = evt.target.getScreenCTM();
+            let ctm;
+
+            // When the cursor goes outside the SVG box in Firefox, getScreenCTM ceases to exist.
+            // This causes some strange select/deselect behavior. Here we attempt to ignore the ctm
+            // modification so that we don't do strange things outside the box
+            if( evt.target.getScreenCTM ) {
+                ctm = evt.target.getScreenCTM();
+            }
+            else {
+                ctm = {
+                    a: 6,
+                    d: 6,
+                    e: 8,
+                    f: 8
+                };
+            }
+
+            //let ctm = evt.target.getScreenCTM();
+            let x = Math.min( evt.clientX, 600);
+            let y = Math.min( evt.clientY, 600);
+            x = Math.max( x, 0 );
+            y = Math.max( y, 0 );
+            //let x = evt.clientX;
+            //let y = evt.clientY;
+            console.log("coordinates in window", x, y);
             return {
-                x: (evt.clientX - ctm.e) / ctm.a,
-                y: (evt.clientY - ctm.f) / ctm.d
+                x: (x - ctm.e) / ctm.a,
+                y: (y - ctm.f) / ctm.d
             };
         }
     }
