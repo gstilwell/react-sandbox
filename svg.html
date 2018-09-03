@@ -18,20 +18,24 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
 
 <script>
     function makeDraggable(evt) {
-        let selected = null;
-        let offset = null;
+        //let selected = null;
+        //let offset = null;
         
-        svg = getSvg(evt);
-        if(evt) {
-            svg.addEventListener('mousedown', startDrag);
-            svg.addEventListener('mousemove', drag);
-            svg.addEventListener('mouseup', endDrag);
-        }
-        else {
-            svg.onmousedown = startDrag;
-            svg.onmousemove = drag;
-            svg.onmouseup = endDrag;
-        }
+        //svg = getSvg(evt);
+        //if(evt) {
+        //    svg.addEventListener('mousedown', startDrag);
+        //    svg.addEventListener('mousemove', drag);
+        //    svg.addEventListener('mouseup', endDrag);
+        //}
+        //else {
+        //    svg.onmousedown = startDrag;
+        //    svg.onmousemove = drag;
+        //    svg.onmouseup = endDrag;
+        //}
+
+        let s = Snap('#main');
+        var rect = s.rect(20,20,40,40);
+        var circle = s.circle(60,150,50);
         
         // get the appropriate svg object based on whether the browser passes
         // the event to event handlers or makes you get it from the global space
@@ -51,12 +55,30 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
                 evt.preventDefault();
                 selected = evt.target;
                 console.log(selected);
+                let svg = getSvg(evt);
 
                 let mouse = mousePosition(evt);
-                let target = {  x: selected.getAttributeNS(null, 'cx'),
-                                y: selected.getAttributeNS(null, 'cy') };
-                offset = {  x: mouse.x - target.x,
-                            y: mouse.y - target.y };
+
+                var transforms = svg.transform.baseVal;
+                if( transforms.length === 0 || transforms.getItem(0).type !== SVGTransform.SVG_TRANSFORM_TRANSLATE ) {
+                    var translate = svg.parentNode.createSVGTransform();
+                    translate.setTranslate(0, 0);
+                    transforms.insertItemBefore(translate, 0);
+                }
+
+                transform = transforms.getItem(0);
+                console.log("start mouse", mouse);
+                //mouse.x -= transform.matrix.e;
+                //mouse.y -= transform.matrix.f;
+                offset = {  x: mouse.x - transform.matrix.e,
+                            y: mouse.y - transform.matrix.f
+                         };
+                console.log("offset", offset);
+
+                //let target = {  x: selected.getAttributeNS(null, 'cx'),
+                //                y: selected.getAttributeNS(null, 'cy') };
+                //offset = {  x: mouse.x - target.x,
+                //            y: mouse.y - target.y };
             }
         }
         function drag(evt) {
@@ -65,11 +87,17 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
                 // less jerky on Firefox
                 evt.preventDefault();
                 let mouse = mousePosition(evt);
-                let moveto = {  x: mouse.x - offset.x,
-                                y: mouse.y - offset.y };
-                console.log("coordinates in svg", moveto.x, moveto.y);
-                selected.setAttributeNS(null, 'cx', moveto.x);
-                selected.setAttributeNS(null, 'cy', moveto.y);
+                let translate = { x: mouse.x - offset.x,
+                                  y: mouse.y - offset.y };
+                console.log("drag mouse", mouse);
+                //console.log("drag offset", offset);
+                console.log("drag translate", translate);
+                transform.setTranslate( translate.x, translate.y );
+                //let moveto = {  x: mouse.x - offset.x,
+                //                y: mouse.y - offset.y };
+                //console.log("coordinates in svg", moveto.x, moveto.y);
+                //selected.setAttributeNS(null, 'cx', moveto.x);
+                //selected.setAttributeNS(null, 'cy', moveto.y);
             }
         }
         function endDrag(evt) {
@@ -104,22 +132,40 @@ Tutorial available at http://www.petercollingridge.co.uk/tutorials/svg/interacti
             //let x = evt.clientX;
             //let y = evt.clientY;
             console.log("coordinates in window", x, y);
+            console.log("ctm", ctm);
+
             return {
                 x: (x - ctm.e) / ctm.a,
                 y: (y - ctm.f) / ctm.d
             };
+
+            var move = function(dx, dy) {
+                this.attr({
+                    transform: this.data('origTransform') + (this.data('origTransform') ? "T" : "t") + [dx, dy];
+                });
+            }
+
+            var start = function() {
+                this.data('origTransform', this.transform().local);
+            }
+
+            var stop = function() {
+                console.log('finished dragging');
+            }
         }
     }
 </script>
 </head>
 <body>
     <svg id="main" viewBox="0 0 100 100" onload="makeDraggable(window.event)">
+        <!--
         <circle cx="50" cy="50" r="5" stroke="red" stroke-width="1" fill="black"
                 class="notdraggable" />
         <circle cx="90" cy="90" r="10" stroke="green" stroke-width="1" fill="yellow"
                 class="draggable" />
         <circle cx="5" cy="5" r="5" stroke="purple" stroke-width="1" fill="blue"
                 class="draggable" />
+        -->
     </svg>
 
 </body>
