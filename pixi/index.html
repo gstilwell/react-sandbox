@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Hello World</title>
+</head>
+  <script src="pixi/pixi.min.js"></script>
+<body>
+  <script type="text/javascript">
+    // https://github.com/kittykatattack/learningPixi
+
+    function background(img) {
+        var background = PIXI.Sprite.fromImage(img);
+        background.width = app.screen.width;
+        background.height = app.screen.height;
+        app.stage.addChild(background);
+    }
+
+    let type = "WebGL"
+    if(!PIXI.utils.isWebGLSupported()){
+      type = "canvas"
+    }
+
+    var app = new PIXI.Application(1440, 810, {backgroundColor : 0x000000});
+    document.body.appendChild(app.view);
+    background('img/starfield.jpg');
+
+
+    // hex grid
+    var hex = PIXI.Sprite.fromImage('img/hex.png');
+    hex.anchor.set(0.5, 0.5);
+    hex.x = app.screen.width / 2;
+    hex.y = app.screen.height / 2;
+    app.stage.addChild(hex);
+
+
+    // create a new Sprite from an image path
+    var ness = PIXI.Sprite.fromImage('img/ness.png');
+
+    // center the sprite's anchor point
+    ness.anchor.set(0.5);
+
+    // move the sprite to the center of the screen
+    ness.x = app.screen.width / 2;
+    ness.y = app.screen.height / 2;
+    //ness.visible = false;
+
+    // following STUFF handles click/drag
+    // can interact with ness
+    ness.interactive = true;
+    // cursor will change to hand
+    ness.buttonMode = true;
+
+    ness
+        .on('pointerdown', onDragStart)
+        .on('pointerup', onDragEnd)
+        .on('pointerupoutside', onDragEnd)
+        .on('pointermove', onDragMove);
+    // FFUTS
+
+    app.stage.addChild(ness);
+
+    // Listen for animate update
+    app.ticker.add(function(delta) {
+        // just for fun, let's rotate mr rabbit a little
+        // delta is 1 if running at 100% performance
+        // creates frame-independent transformation
+        ness.rotation += 0.1 * delta;
+    });
+
+    function onDragStart(event) {
+        // store a reference to the data
+        // the reason for this is because of multitouch
+        // we want to track the movement of this particular touch
+        this.data = event.data;
+        this.dragging = true;
+    }
+    
+    function onDragEnd() {
+        this.dragging = false;
+        // set the interaction data to null
+        this.data = null;
+    }
+    
+    function onDragMove() {
+        if (this.dragging) {
+            var newPosition = this.data.getLocalPosition(this.parent);
+            this.x = newPosition.x;
+            this.y = newPosition.y;
+        }
+    }
+
+
+  </script>
+</body>
+</html>
