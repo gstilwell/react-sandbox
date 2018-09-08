@@ -2,94 +2,106 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Hello World</title>
+  <title>Ness IN SPAAAAAACE</title>
 </head>
   <script src="pixi/pixi.min.js"></script>
 <body>
   <script type="text/javascript">
     // https://github.com/kittykatattack/learningPixi
 
-    function background(img) {
-        var background = PIXI.Sprite.fromImage(img);
-        background.width = app.screen.width;
-        background.height = app.screen.height;
-        app.stage.addChild(background);
-    }
-
     let type = "WebGL"
     if(!PIXI.utils.isWebGLSupported()){
       type = "canvas"
     }
 
-    var app = new PIXI.Application(1440, 810, {backgroundColor : 0x000000});
+    var app = new PIXI.Application({ width: 1440, height: 810, backgroundColor : 0x000000});
     document.body.appendChild(app.view);
-    background('img/starfield.jpg');
 
+    const loader = PIXI.loader;
+    const sprites = {};
 
-    // hex grid
-    var hex = PIXI.Sprite.fromImage('img/hex.png');
-    hex.anchor.set(0.5, 0.5);
-    hex.x = app.screen.width / 2;
-    hex.y = app.screen.height / 2;
-    app.stage.addChild(hex);
+    loader.add('ness', 'img/ness.png')
+          .add('hexmap', 'img/hex2.png')
+          .add('starfield', 'img/starfield.jpg');
 
+    // TODO investigate this middleware business
+    //loader.pre(cachingMiddleware);
+    //loader.use(parsingMiddleware);
+    loader.load((loader, resources) => {
+        sprites.hexmap = new PIXI.Sprite(resources.hexmap.texture);
+        sprites.starfield = new PIXI.Sprite(resources.starfield.texture);
+        sprites.ness = new PIXI.Sprite(resources.ness.texture);
+        console.log(sprites.starfield);
 
-    // create a new Sprite from an image path
-    var ness = PIXI.Sprite.fromImage('img/ness.png');
+        app.stage.addChild(sprites.starfield, sprites.hexmap, sprites.ness);
 
-    // center the sprite's anchor point
-    ness.anchor.set(0.5);
+        // fit background to window
+        sprites.starfield.width = app.screen.width;
+        sprites.starfield.height = app.screen.height;
 
-    // move the sprite to the center of the screen
-    ness.x = app.screen.width / 2;
-    ness.y = app.screen.height / 2;
-    //ness.visible = false;
+        sprites.hexmap.anchor.set( 0.5, 0.5 );
+        sprites.hexmap.interactive = true;
+        sprites.hexmap.x = app.screen.width / 2;
+        sprites.hexmap.y = app.screen.height / 2;
+        sprites.hexmap.on('pointerdown', placeThingy);
 
-    // following STUFF handles click/drag
-    // can interact with ness
-    ness.interactive = true;
-    // cursor will change to hand
-    ness.buttonMode = true;
-
-    ness
-        .on('pointerdown', onDragStart)
-        .on('pointerup', onDragEnd)
-        .on('pointerupoutside', onDragEnd)
-        .on('pointermove', onDragMove);
-    // FFUTS
-
-    app.stage.addChild(ness);
-
-    // Listen for animate update
-    app.ticker.add(function(delta) {
-        // just for fun, let's rotate mr rabbit a little
-        // delta is 1 if running at 100% performance
-        // creates frame-independent transformation
-        ness.rotation += 0.1 * delta;
+        sprites.ness.anchor.set( 0.5, 0.5 );
+        sprites.ness.interactive = true;
+        sprites.ness.x = app.screen.width / 2;
+        sprites.ness.y = app.screen.height / 2;
+        sprites.ness.on('pointerdown', selectNess);
     });
 
-    function onDragStart(event) {
-        // store a reference to the data
-        // the reason for this is because of multitouch
-        // we want to track the movement of this particular touch
-        this.data = event.data;
-        this.dragging = true;
+    function placeThingy(event) {
+        var newPosition = event.data.getLocalPosition(this.parent);
+        selected.x = newPosition.x;
+        selected.y = newPosition.y;
     }
-    
-    function onDragEnd() {
-        this.dragging = false;
-        // set the interaction data to null
-        this.data = null;
-    }
-    
-    function onDragMove() {
-        if (this.dragging) {
-            var newPosition = this.data.getLocalPosition(this.parent);
-            this.x = newPosition.x;
-            this.y = newPosition.y;
+
+    let selected = null;
+    function selectNess(event) {
+        if( selected === this ) {
+            selected = null;
+            this.alpha = 1;
+        } else {
+            selected = this;
+            this.alpha = 0.75;
         }
     }
 
+    //--------------------------------------------------------------
+    //  for click and drag behavior
+    //--------------------------------------------------------------
+    //ness
+    //    .on('pointerdown', onDragStart)
+    //    .on('pointerup', onDragEnd)
+    //    .on('pointerupoutside', onDragEnd)
+    //    .on('pointermove', onDragMove);
+
+    //function onDragStart(event) {
+    //    // store a reference to the data
+    //    // the reason for this is because of multitouch
+    //    // we want to track the movement of this particular touch
+    //    this.data = event.data;
+    //    this.dragging = true;
+    //}
+    
+    //function onDragEnd() {
+    //    this.dragging = false;
+    //    // set the interaction data to null
+    //    this.data = null;
+    //}
+    
+    //function onDragMove() {
+    //    if (this.dragging) {
+    //        var newPosition = this.data.getLocalPosition(this.parent);
+    //        this.x = newPosition.x;
+    //        this.y = newPosition.y;
+    //    }
+    //}
+    //--------------------------------------------------------------
+    //  end click and drag behavior
+    //--------------------------------------------------------------
 
   </script>
 </body>
