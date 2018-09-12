@@ -5,10 +5,139 @@
   <title>Ness IN SPAAAAAACE</title>
 </head>
   <script src="pixi/pixi.min.js"></script>
+  <script src="js/PixiApp.js"></script>
 <body>
-  <div id="game"></div>
+  <script type="text/javascript">
+    // https://github.com/kittykatattack/learningPixi
 
-  <script type="text/javascript" src="js/Game.js">
+    let type = "WebGL"
+    if(!PIXI.utils.isWebGLSupported()){
+      type = "canvas"
+    }
+
+    var app = new PIXI.Application({ width: 1440, height: 810, backgroundColor : 0x000000});
+    document.body.appendChild(app.view);
+
+    const loader = PIXI.loader;
+    const sprites = {};
+
+    loader.add('ness', 'img/saudor.png')
+          .add('hexmap', 'img/ti4matmod.png')
+          .add('starfield', 'img/starfield.jpg');
+
+    // TODO investigate this middleware business
+    //loader.pre(cachingMiddleware);
+    //loader.use(parsingMiddleware);
+    loader.load((loader, resources) => {
+        sprites.hexmap = new PIXI.Sprite(resources.hexmap.texture);
+        sprites.starfield = new PIXI.Sprite(resources.starfield.texture);
+        sprites.nesses = [
+            new PIXI.Sprite(resources.ness.texture),
+            new PIXI.Sprite(resources.ness.texture),
+            new PIXI.Sprite(resources.ness.texture),
+            new PIXI.Sprite(resources.ness.texture),
+            new PIXI.Sprite(resources.ness.texture),
+        ];
+
+        console.log(sprites.starfield);
+
+        app.stage.addChild(sprites.starfield, sprites.hexmap);
+
+        // fit background to window
+        sprites.starfield.width = app.screen.width;
+        sprites.starfield.height = app.screen.height;
+
+        sprites.hexmap.anchor.set( 0.5, 0.5 );
+        //sprites.hexmap.interactive = true;
+        sprites.hexmap.x = app.screen.width / 2;
+        sprites.hexmap.y = app.screen.height / 2;
+        sprites.hexmap.height = app.screen.height;
+        sprites.hexmap.width = app.screen.height;
+        //sprites.hexmap.on('pointerdown', placeThingy);
+
+        sprites.nesses.forEach( (ness, index) => {
+            app.stage.addChild(ness);
+            ness.anchor.set( 0.5, 0.5 );
+            ness.interactive = true;
+            ness.buttonMode = true;
+            console.log(ness);
+            ness.width = 115;
+            ness.height = 100;
+            ness.hitArea = new PIXI.Ellipse( 0, 0, (ness.width/ness.scale.x) / 2, (ness.height/ness.scale.y) / 2);
+            ness.x = ness.width * 1.5 + ness.width * 1.5 * index;
+            ness.y = app.stage.height - ( ness.height * 1.5 );
+            //ness.on('pointerdown', selectNess);
+            ness.on('pointerdown', onDragStart)
+                .on('pointerup', onDragEnd)
+                .on('pointerupoutside', onDragEnd)
+                .on('pointermove', onDragMove);
+        });
+    });
+
+    function placeThingy(event) {
+        var newPosition = event.data.getLocalPosition(this.parent);
+        selected.x = newPosition.x;
+        selected.y = newPosition.y;
+    }
+
+    let selected = null;
+    function selectNess(event) {
+        if( selected === this ) {
+            selected = null;
+            this.alpha = 1;
+        } else {
+            if( selected ) {
+                selected.alpha = 1;
+            }
+            selected = this;
+            this.alpha = 0.75;
+        }
+    }
+
+    //--------------------------------------------------------------
+    //  for click and drag behavior
+    //--------------------------------------------------------------
+    //ness
+    //    .on('pointerdown', onDragStart)
+    //    .on('pointerup', onDragEnd)
+    //    .on('pointerupoutside', onDragEnd)
+    //    .on('pointermove', onDragMove);
+
+    function onDragStart(event) {
+        // store a reference to the data
+        // the reason for this is because of multitouch
+        // we want to track the movement of this particular touch
+        this.data = event.data;
+        this.dragging = true;
+        //var anchorPoint = this.data.getLocalPosition(this);
+        //var scale = this.scale;
+        //var scaledAnchor = {
+        //    x: anchorPoint.x * scale.x,
+        //    y: anchorPoint.y * scale.y,
+        //};
+        //console.log(this.data.getLocalPosition(this));
+        //this.anchor.set( scaledAnchor.x / this.width, scaledAnchor.y / this.height );
+    }
+    
+    function onDragEnd() {
+        this.dragging = false;
+        // set the interaction data to null
+        this.data = null;
+        //this.anchor.set( 0.0, 0.0 );
+    }
+    
+    function onDragMove() {
+        if (this.dragging) {
+            var newPosition = this.data.getLocalPosition(this.parent);
+            // get location of click within target
+            this.x = newPosition.x;
+            this.y = newPosition.y;
+        }
+    }
+    //--------------------------------------------------------------
+    //  end click and drag behavior
+    //--------------------------------------------------------------
+
   </script>
 
 </body>
