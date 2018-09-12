@@ -20,8 +20,8 @@
     const loader = PIXI.loader;
     const sprites = {};
 
-    loader.add('ness', 'img/ness.png')
-          .add('hexmap', 'img/hex2.png')
+    loader.add('ness', 'img/saudor.png')
+          .add('hexmap', 'img/ti4matmod.png')
           .add('starfield', 'img/starfield.jpg');
 
     // TODO investigate this middleware business
@@ -47,19 +47,29 @@
         sprites.starfield.height = app.screen.height;
 
         sprites.hexmap.anchor.set( 0.5, 0.5 );
-        sprites.hexmap.interactive = true;
+        //sprites.hexmap.interactive = true;
         sprites.hexmap.x = app.screen.width / 2;
         sprites.hexmap.y = app.screen.height / 2;
-        sprites.hexmap.on('pointerdown', placeThingy);
+        sprites.hexmap.height = app.screen.height;
+        sprites.hexmap.width = app.screen.height;
+        //sprites.hexmap.on('pointerdown', placeThingy);
 
         sprites.nesses.forEach( (ness, index) => {
             app.stage.addChild(ness);
             ness.anchor.set( 0.5, 0.5 );
             ness.interactive = true;
+            ness.buttonMode = true;
             console.log(ness);
+            ness.width = 115;
+            ness.height = 100;
+            ness.hitArea = new PIXI.Ellipse( 0, 0, (ness.width/ness.scale.x) / 2, (ness.height/ness.scale.y) / 2);
             ness.x = ness.width * 1.5 + ness.width * 1.5 * index;
             ness.y = app.stage.height - ( ness.height * 1.5 );
-            ness.on('pointerdown', selectNess);
+            //ness.on('pointerdown', selectNess);
+            ness.on('pointerdown', onDragStart)
+                .on('pointerup', onDragEnd)
+                .on('pointerupoutside', onDragEnd)
+                .on('pointermove', onDragMove);
         });
     });
 
@@ -92,27 +102,37 @@
     //    .on('pointerupoutside', onDragEnd)
     //    .on('pointermove', onDragMove);
 
-    //function onDragStart(event) {
-    //    // store a reference to the data
-    //    // the reason for this is because of multitouch
-    //    // we want to track the movement of this particular touch
-    //    this.data = event.data;
-    //    this.dragging = true;
-    //}
+    function onDragStart(event) {
+        // store a reference to the data
+        // the reason for this is because of multitouch
+        // we want to track the movement of this particular touch
+        this.data = event.data;
+        this.dragging = true;
+        //var anchorPoint = this.data.getLocalPosition(this);
+        //var scale = this.scale;
+        //var scaledAnchor = {
+        //    x: anchorPoint.x * scale.x,
+        //    y: anchorPoint.y * scale.y,
+        //};
+        //console.log(this.data.getLocalPosition(this));
+        //this.anchor.set( scaledAnchor.x / this.width, scaledAnchor.y / this.height );
+    }
     
-    //function onDragEnd() {
-    //    this.dragging = false;
-    //    // set the interaction data to null
-    //    this.data = null;
-    //}
+    function onDragEnd() {
+        this.dragging = false;
+        // set the interaction data to null
+        this.data = null;
+        //this.anchor.set( 0.0, 0.0 );
+    }
     
-    //function onDragMove() {
-    //    if (this.dragging) {
-    //        var newPosition = this.data.getLocalPosition(this.parent);
-    //        this.x = newPosition.x;
-    //        this.y = newPosition.y;
-    //    }
-    //}
+    function onDragMove() {
+        if (this.dragging) {
+            var newPosition = this.data.getLocalPosition(this.parent);
+            // get location of click within target
+            this.x = newPosition.x;
+            this.y = newPosition.y;
+        }
+    }
     //--------------------------------------------------------------
     //  end click and drag behavior
     //--------------------------------------------------------------
