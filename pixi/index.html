@@ -109,21 +109,29 @@
         // we want to track the movement of this particular touch
         this.data = event.data;
         this.dragging = true;
-        //var anchorPoint = this.data.getLocalPosition(this);
-        //var scale = this.scale;
-        //var scaledAnchor = {
-        //    x: anchorPoint.x * scale.x,
-        //    y: anchorPoint.y * scale.y,
-        //};
-        //console.log(this.data.getLocalPosition(this));
-        //this.anchor.set( scaledAnchor.x / this.width, scaledAnchor.y / this.height );
+        this.clickAt = this.data.getLocalPosition(this);
+        // this.width/height are the current pixel size of the image on the stage
+        // getLocalPosition returns size based on the actual size of the source image
+        // so we must calculate the actual size (size below) and use that to determine where we clicked
+        this.actualSize = { x: this.width / this.scale.x,
+                            y: this.height / this.scale.y };
+        this.newAnchor = { x: this.clickAt.x / this.actualSize.x + 0.5,
+                           y: this.clickAt.y / this.actualSize.y + 0.5 };
+        this.anchor.set( this.newAnchor.x, this.newAnchor.y );
     }
     
     function onDragEnd() {
         this.dragging = false;
+
+        var currentPosition = this.data.getLocalPosition(this.parent);
+        console.log("new anchor", this.newAnchor);
+        console.log("current position", currentPosition);
+        console.log("clickAt", this.clickAt);
+        this.anchor.set( 0.5, 0.5 );
+        this.x = currentPosition.x - (this.clickAt.x * this.scale.x);
+        this.y = currentPosition.y - (this.clickAt.y * this.scale.y);
         // set the interaction data to null
         this.data = null;
-        //this.anchor.set( 0.0, 0.0 );
     }
     
     function onDragMove() {
