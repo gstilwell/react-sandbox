@@ -15,7 +15,10 @@
       type = "canvas"
     }
 
-    var app = new PIXI.Application({ width: 1440, height: 810, backgroundColor : 0x000000});
+    var stageWidth = 1440;
+    var stageHeight = 810;
+
+    var app = new PIXI.Application({ width: stageWidth, height: stageHeight, backgroundColor : 0x000000});
     document.body.appendChild(app.view);
 
     const loader = PIXI.loader;
@@ -126,16 +129,16 @@
                            y: this.clickAt.y / this.actualSize.y + 0.5 };
         this.anchor.set( this.newAnchor.x, this.newAnchor.y );
         var newPosition = this.data.getLocalPosition(this.parent);
-        this.x = newPosition.x;
-        this.y = newPosition.y;
+        this.x = withinBounds(0, stageWidth, newPosition.x);
+        this.y = withinBounds(0, stageHeight, newPosition.y);
     }
     
     function onDragEnd() {
         this.dragging = false;
         this.anchor.set( 0.5, 0.5 );
         var currentPosition = this.data.getLocalPosition(this.parent);
-        this.x = currentPosition.x - (this.clickAt.x * this.scale.x);
-        this.y = currentPosition.y - (this.clickAt.y * this.scale.y);
+        this.x = withinBounds(0, stageWidth, currentPosition.x - (this.clickAt.x * this.scale.x));
+        this.y = withinBounds(0, stageHeight, currentPosition.y - (this.clickAt.y * this.scale.y));
         // set the interaction data to null
         this.data = null;
     }
@@ -145,8 +148,8 @@
             var newPosition = this.data.getLocalPosition(this.parent);
             console.log("parent", newPosition.x, newPosition.y);
             // get location of click within target
-            this.x = withinBounds(0, 1440, newPosition.x);
-            this.y = withinBounds(0, 810, newPosition.y);
+            this.x = withinBounds(0, stageWidth, newPosition.x);
+            this.y = withinBounds(0, stageHeight, newPosition.y);
         }
     }
     //--------------------------------------------------------------
