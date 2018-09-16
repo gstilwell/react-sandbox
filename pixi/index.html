@@ -103,6 +103,10 @@
     //    .on('pointerupoutside', onDragEnd)
     //    .on('pointermove', onDragMove);
 
+    function withinBounds( min, max, value ) {
+        return Math.max( Math.min(value, max), min );
+    }
+
     function onDragStart(event) {
         // store a reference to the data
         // the reason for this is because of multitouch
@@ -110,6 +114,7 @@
         this.data = event.data;
         this.dragging = true;
         this.clickAt = this.data.getLocalPosition(this);
+        console.log(this.clickAt);
         var positionInStage = this.data.getLocalPosition(this.parent);
 
         // this.width/height are the current pixel size of the image on the stage
@@ -138,9 +143,10 @@
     function onDragMove() {
         if (this.dragging) {
             var newPosition = this.data.getLocalPosition(this.parent);
+            console.log("parent", newPosition.x, newPosition.y);
             // get location of click within target
-            this.x = newPosition.x;
-            this.y = newPosition.y;
+            this.x = withinBounds(0, 1440, newPosition.x);
+            this.y = withinBounds(0, 810, newPosition.y);
         }
     }
     //--------------------------------------------------------------
