@@ -17,6 +17,7 @@
 
     var stageWidth = 1440;
     var stageHeight = 810;
+    var center = 0.5;
 
     var app = new PIXI.Application({ width: stageWidth, height: stageHeight, backgroundColor : 0x000000});
     document.body.appendChild(app.view);
@@ -50,7 +51,7 @@
         sprites.starfield.width = app.screen.width;
         sprites.starfield.height = app.screen.height;
 
-        sprites.hexmap.anchor.set( 0.5, 0.5 );
+        sprites.hexmap.anchor.set( center, center );
         //sprites.hexmap.interactive = true;
         sprites.hexmap.x = app.screen.width / 2;
         sprites.hexmap.y = app.screen.height / 2;
@@ -60,7 +61,7 @@
 
         sprites.nesses.forEach( (ness, index) => {
             app.stage.addChild(ness);
-            ness.anchor.set( 0.5, 0.5 );
+            ness.anchor.set( center, center );
             ness.interactive = true;
             ness.buttonMode = true;
             console.log(ness);
@@ -125,8 +126,8 @@
         // so we must calculate the actual size (size below) and use that to determine where we clicked
         this.actualSize = { x: this.width / this.scale.x,
                             y: this.height / this.scale.y };
-        this.newAnchor = { x: this.clickAt.x / this.actualSize.x + 0.5,
-                           y: this.clickAt.y / this.actualSize.y + 0.5 };
+        this.newAnchor = { x: this.clickAt.x / this.actualSize.x + center,
+                           y: this.clickAt.y / this.actualSize.y + center };
         this.anchor.set( this.newAnchor.x, this.newAnchor.y );
         var newPosition = this.data.getLocalPosition(this.parent);
         this.x = withinBounds(0, stageWidth, newPosition.x);
@@ -135,7 +136,7 @@
     
     function onDragEnd() {
         this.dragging = false;
-        this.anchor.set( 0.5, 0.5 );
+        this.anchor.set( center, center );
         var currentPosition = this.data.getLocalPosition(this.parent);
         this.x = withinBounds(0, stageWidth, currentPosition.x - (this.clickAt.x * this.scale.x));
         this.y = withinBounds(0, stageHeight, currentPosition.y - (this.clickAt.y * this.scale.y));
